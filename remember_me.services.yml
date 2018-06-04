@@ -1,0 +1,5 @@
+services:
+  remember_me.event_subscriber:
+    class: Drupal\remember_me\EventSubscriber\SetLifeTime
+    tags:
+      - { name: event_subscriber }

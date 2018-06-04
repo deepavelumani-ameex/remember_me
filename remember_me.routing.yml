@@ -1,0 +1,7 @@
+remember_me.admin_settings:
+  path: '/admin/config/system/remember_me'
+  defaults:
+    _form: '\Drupal\remember_me\Form\RememberMeAdminSettings'
+    _title: 'Remember Me'
+  requirements:
+    _permission: 'administer site configuration'

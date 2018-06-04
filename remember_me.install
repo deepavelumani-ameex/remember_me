@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Contains install and update functions for remember_me.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function remember_me_install() {
+	//Assign a weight -99 for remember me module
+	 module_set_weight('remember_me', -99);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function remember_me_uninstall() {
+	 // Delete all remember_me variables
+	\Drupal::configFactory()->getEditable('remember_me.settings')->delete();
+	drupal_set_message(t('Successfully removed all data for remember_me.'));
+}

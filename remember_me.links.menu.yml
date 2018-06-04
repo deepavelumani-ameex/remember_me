@@ -1,0 +1,6 @@
+remember_me.admin:
+  title: 'Remember me settings'
+  description: 'A module for remember me settings'
+  parent: system.admin_config_system
+  route_name: remember_me.admin_settings
+  weight: 100

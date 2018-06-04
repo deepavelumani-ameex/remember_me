@@ -1,0 +1,9 @@
+name: Remember me
+description: Adds a ''Remember me'' checkbox to login forms.
+package: Other
+type: module
+version: 8.x
+core: 8.x
+
+
+

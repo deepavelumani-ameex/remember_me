@@ -1,0 +1,103 @@
+<?php
+
+
+/**
+ * @file
+ * Adds a "Remember me" checkbox to login forms.
+ */
+
+/**
+ * Implements hook_form_alter().
+ */
+function remember_me_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Only make changes to these forms.
+  if (in_array($form_id, array('user_login_form', 'user_login_block'))) {
+    \Drupal::service('page_cache_kill_switch')->trigger();
+    $config_checkbox_visible = \Drupal::config('remember_me.settings')->get('remember_me_checkbox_visible');
+    $config_checkbox = \Drupal::config('remember_me.settings')->get('remember_me_checkbox');
+
+    // Configuration for the remember me checkbox.
+    $cbox['remember_me'] = array(
+      '#title' => t('Remember me'),
+      '#type' => $config_checkbox_visible ? 'checkbox' : 'hidden',
+      '#default_value' => $config_checkbox,
+      '#attributes' => array('tabindex' => 1),
+    );
+
+    $que = array();
+
+    // Now lets try and insert it right after the password field in the document
+    // and set the tabindex to 1 for each field so that we can jump in sequence.
+    foreach ($form as $key => $value) {
+      switch($key) {
+      	case 'name':
+      	case 'pass':
+      	    $value['#attributes']['tabindex'] = 1;
+      	break;
+      	case 'actions':
+      		 $form = $que + $cbox + $form;
+      		 $form[$key]['submit']['#attributes']['tabindex'] = 1;
+      	return;
+      }
+      $que[$key] = $value;
+    }
+    unset($form['#submit'][0]);
+    $form['#submit'][] = '_remember_me_login_form_submit'; 
+  }
+
+}
+
+/**
+  * Submits custom user login.
+  */
+function _remember_me_login_form_submit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state){
+  $cusers = $form_state->getValue(array('name'));
+  $cpass = $form_state->getValue(array('pass'));
+  $uid = get_uid($cusers);
+  $userData = \Drupal::service('user.data');
+  if($form_state->getValue('remember_me')) {
+    $userData->set('remember_me', $uid, 'UserKeys', array(
+        'remember_me' => $form_state->getValue('remember_me'),
+    ));
+    $account = user_load($uid);
+    user_login_finalize($account);
+  }
+  else {
+    $account = user_load($uid);
+    user_login_finalize($account);
+  }
+
+}
+
+/**
+ * Custom query to get uid for user name.
+ * @param string $uname
+ *   The user name to get the uid.
+ *
+ * @return int
+ *   User ID.
+ */
+function get_uid($uname){
+  $query = \Drupal::database()->select('users_field_data', 'ufd');
+  $query->addField('ufd', 'uid');
+  $query->condition('ufd.name', $uname);
+  $query->range(0, 1);
+  $uid = $query->execute()->fetchField();
+  return $uid;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function remember_me_theme($existing, $type, $theme, $path) {
+ return [
+    'remember_me_settings_display' => [
+      'variables' => [
+      'vars' => NULL,
+      ],
+    ],
+  ];
+}
+
+
+
